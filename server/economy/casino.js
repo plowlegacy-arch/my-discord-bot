@@ -320,6 +320,41 @@ export const playGame = db.transaction((guildId, userId, game, wager, options = 
       result = { bucket: idx, mults, rows, path, multiplier: mult, win: mult > 1 };
       break;
     }
+    case 'blackjack': {
+      const stand = Number(options.stand ?? 17);
+      floats = nextFloats(gid, uid, 12);
+      let o = 0;
+      const playerCards = [drawCard(floats, o++), drawCard(floats, o++)];
+      const dealerCards = [drawCard(floats, o++), drawCard(floats, o++)];
+      let pv = handValue(playerCards);
+      let dv = handValue(dealerCards);
+      let playerBust = false;
+      while (pv < stand && o < floats.length) {
+        playerCards.push(drawCard(floats, o++));
+        pv = handValue(playerCards);
+        if (pv > 21) { playerBust = true; break; }
+      }
+      if (!playerBust) {
+        while (dv < 17 && o < floats.length) {
+          dealerCards.push(drawCard(floats, o++));
+          dv = handValue(dealerCards);
+        }
+      }
+      const natural = playerCards.length === 2 && pv === 21 && !(dealerCards.length === 2 && dv === 21);
+      let mult = 0;
+      let outcome = 'push';
+      if (playerBust) { mult = 0; outcome = 'bust'; }
+      else if (dv > 21) { mult = 2; outcome = 'dealer_bust'; }
+      else if (pv > dv) { mult = natural ? 2.5 : 2; outcome = natural ? 'blackjack' : 'win'; }
+      else if (pv < dv) { mult = 0; outcome = 'lose'; }
+      else { mult = 1; outcome = 'push'; }
+      if (mult > 0) payout = Math.round(w * mult);
+      result = {
+        player: playerCards, dealer: dealerCards, player_total: pv, dealer_total: dv,
+        outcome, natural, multiplier: mult, win: mult > 1,
+      };
+      break;
+    }
     case 'baccarat': {
       const pick = ['player', 'banker', 'tie'].includes(options.pick) ? options.pick : 'player';
       floats = nextFloats(gid, uid, 6);
