@@ -325,6 +325,25 @@ CREATE TABLE IF NOT EXISTS giveaways (
 );
 CREATE INDEX IF NOT EXISTS idx_giveaway_guild ON giveaways(guild_id, status, ends_at);
 
+CREATE TABLE IF NOT EXISTS proposals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,
+  from_id TEXT NOT NULL,
+  to_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at INTEGER NOT NULL,
+  resolved_at INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS family (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,
+  parent_a TEXT NOT NULL,
+  parent_b TEXT,
+  child_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS lottery_rounds (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guild_id TEXT NOT NULL,
