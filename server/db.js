@@ -325,6 +325,27 @@ CREATE TABLE IF NOT EXISTS giveaways (
 );
 CREATE INDEX IF NOT EXISTS idx_giveaway_guild ON giveaways(guild_id, status, ends_at);
 
+CREATE TABLE IF NOT EXISTS lottery_rounds (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id TEXT NOT NULL,
+  pot INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'open',
+  winner_id TEXT,
+  ends_at INTEGER,
+  drawn_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_lottery_guild ON lottery_rounds(guild_id, status);
+
+CREATE TABLE IF NOT EXISTS lottery_tickets (
+  guild_id TEXT NOT NULL,
+  round_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  tickets INTEGER NOT NULL DEFAULT 0,
+  bought_at INTEGER NOT NULL,
+  PRIMARY KEY (guild_id, round_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS achievements (
   guild_id TEXT NOT NULL,
   user_id TEXT NOT NULL,
