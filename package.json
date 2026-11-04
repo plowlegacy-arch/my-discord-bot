@@ -1,0 +1,21 @@
+{
+  "name": "trench-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TRENCH SCANNER — multi-chain on-chain token intelligence, unlimited multipliers, wallet PNL and a premium Discord economy.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "build": "npm --prefix dashboard install --no-audit --no-fund && npm --prefix dashboard run build",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "discord.js": "^14.16.3",
+    "express": "^4.21.2"
+  }
+}
