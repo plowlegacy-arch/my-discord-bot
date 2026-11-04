@@ -16,7 +16,6 @@ const GAMES = {
   slots: { name: 'Slots', emoji: '🎰', edge: 0.96 },
   plinko: { name: 'Plinko', emoji: '🔻', edge: 0.97 },
   baccarat: { name: 'Baccarat', emoji: '🀄', edge: 0.988 },
-  blackjack: { name: 'Blackjack', emoji: '🃏', edge: 0.99, max_win_mult: 3, min_wager: 50 },
 };
 
 export const GAME_ORDER = ['crash', 'roulette', 'blackjack', 'mines', 'slots', 'dice', 'coinflip', 'plinko', 'baccarat'];
