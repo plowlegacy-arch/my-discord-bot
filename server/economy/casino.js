@@ -11,7 +11,7 @@ const GAMES = {
   coinflip: { name: 'Coinflip', emoji: '🪙', edge: 0.98, max_win_mult: 2 },
   crash: { name: 'Crash', emoji: '📉', edge: 0.97 },
   roulette: { name: 'Roulette', emoji: '🎡', edge: 0.973 },
-  blackjack: { name: 'Blackjack', emoji: '🃏', edge: 0.99 },
+  blackjack: { name: 'Blackjack', emoji: '🃏', edge: 0.99, max_win_mult: 3 },
   mines: { name: 'Mines', emoji: '💣', edge: 0.99 },
   slots: { name: 'Slots', emoji: '🎰', edge: 0.96 },
   plinko: { name: 'Plinko', emoji: '🔻', edge: 0.97 },
