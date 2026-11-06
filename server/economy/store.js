@@ -167,7 +167,7 @@ export function audit(guildId, actorId, action, targetId, amount, meta) {
 }
 
 export const auditLog = (guildId, limit = 50) =>
-  db.prepare('SELECT * FROM audit_log WHERE guild_id = ? ORDER BY ts DESC LIMIT ?').all(String(guildId), limit);
+  db.prepare('SELECT * FROM audit_log WHERE guild_id = ? ORDER BY ts DESC, id DESC LIMIT ?').all(String(guildId), limit);
 
 export function resetBalance(guildId, userId) {
   getUser(guildId, userId);
