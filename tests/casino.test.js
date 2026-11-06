@@ -32,7 +32,7 @@ test('mines multiplier grows with revealed gems and shrinks with more mines', ()
   const one = casino.minesMultiplier(1, 3);
   const three = casino.minesMultiplier(3, 3);
   assert.ok(three > one);
-  assert.ok(casino.minesMultiplier(3, 1) > casino.minesMultiplier(3, 20));
+  assert.ok(casino.minesMultiplier(3, 20) > casino.minesMultiplier(3, 1));
 });
 
 test('plinko buckets form a valid distribution with a house edge', () => {

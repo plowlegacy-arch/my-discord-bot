@@ -61,14 +61,19 @@ test('health endpoint reports a running service', async () => {
   const { status, body } = await get('/api/health');
   assert.equal(status, 200);
   assert.equal(body.ok, true);
-  assert.ok(body.health || body.status || body.uptime !== undefined);
+  assert.equal(body.service, 'trench-scanner');
+  assert.equal(typeof body.uptime_s, 'number');
+  assert.ok(body.bot);
 });
 
 test('stats endpoint returns real aggregates', async () => {
   const { status, body } = await get('/api/stats');
   assert.equal(status, 200);
   assert.equal(body.ok, true);
-  assert.equal(typeof body.stats, 'object');
+  assert.equal(typeof body.tokens, 'number');
+  assert.equal(typeof body.milestones, 'number');
+  assert.ok(Array.isArray(body.top_movers));
+  assert.ok(body.risk);
 });
 
 test('chains endpoint lists every configured network with a status', async () => {
@@ -113,7 +118,9 @@ test('economy endpoints are guild scoped and expose config + supply', async () =
   assert.equal(overview.body.ok, true);
   assert.equal(overview.body.config.guild_id, GUILD);
   assert.equal(typeof overview.body.supply, 'number');
-  assert.ok(Array.isArray(overview.body.members));
+  assert.equal(typeof overview.body.members, 'number');
+  assert.ok(Array.isArray(overview.body.leaderboard));
+  assert.ok(Array.isArray(overview.body.games));
 
   const members = await get(`/api/economy/members?guild=${GUILD}`);
   assert.equal(members.body.ok, true);

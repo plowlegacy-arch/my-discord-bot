@@ -82,7 +82,7 @@ test('token feed separates deployment, launch and liquidity stages', () => {
 
   assert.equal(deployed.stage, 'deployed');
   assert.equal(launched.stage, 'launched');
-  assert.ok(tokens.stageRank('liquidity') > tokens.stageRank('deployed'));
+  assert.ok(tokens.stageRank('liquid') > tokens.stageRank('deployed'));
 
   tokens.recordEvent({ chain: 'solana', address: deployed.address, type: 'deploy', tx: 'sig1', token_id: deployed.id });
   const feed = tokens.feedEvents({ type: 'deploy', limit: 10 });
