@@ -403,8 +403,6 @@ export async function handleScanner(interaction) {
 
 function tokenDetailButtonsSafe(t, extra) {
   try {
-    // eslint-disable-next-line global-require
-    const { tokenButtons } = require('../embeds.js');
     return tokenButtons({ ...t, explorer_tx: extra.explorer_tx });
   } catch {
     return null;
