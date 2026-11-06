@@ -7,7 +7,7 @@ import { walletPnl, pnlLeaderboard, pnlOverview } from '../../services/pnl.js';
 import { riskSummary, analyzeToken } from '../../services/security.js';
 import { scanWallet } from '../../services/wallet.js';
 import { getGuild, updateGuild } from '../../economy/store.js';
-import { tokenDetailEmbed, tokenEventEmbed, chainStatusEmbed, walletPnlEmbed } from '../embeds.js';
+import { tokenDetailEmbed, chainStatusEmbed, walletPnlEmbed, tokenButtons } from '../embeds.js';
 import { embed, ok, fail, section, block, usd, money, mult, num, pct, timeAgo, progress, DIVIDER } from '../theme.js';
 
 const chainChoices = CHAINS.map((c) => ({ name: `${c.name}${c.status === 'live' ? ' • live' : ' • standby'}`, value: c.id }));
