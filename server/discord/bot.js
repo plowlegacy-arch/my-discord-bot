@@ -11,7 +11,7 @@ import { scannerCommands, handleScanner } from './commands/scanner.js';
 import { tokenEventEmbed, multiplierEmbed, tokenDetailEmbed, tokenButtons, multiplierButtons } from './embeds.js';
 import { embed, fail, ok, DIVIDER, mult, usd, num } from './theme.js';
 import { bus } from '../services/tracker.js';
-import { tokenDetail, tokenWallets } from '../services/tracker.js';
+import { tokenDetail } from '../services/tracker.js';
 import { tokenWallets as walletsOfToken } from '../services/pnl.js';
 import { dueGiveaways, drawGiveaway, getGiveaway } from '../economy/giveaways.js';
 import { currentLotteryRound, drawLottery } from '../economy/casino.js';
