@@ -78,3 +78,98 @@ export function businessLeaderboard(guildId, limit = 10) {
     return { owner_id: r.owner_id, businesses: r.c, levels: r.levels, pending };
   });
 }
+
+/* ------------------------------------------------------- transactions */
+
+import { debit, credit, getUser } from './store.js';
+
+/** Buy a business. Currency is debited atomically; failure means no row. */
+export const buyBusiness = db.transaction((guildId, userId, type, name = null) => {
+  const gid = String(guildId);
+  const uid = String(userId);
+  const t = BUSINESS_TYPES[type];
+  if (!t) return { ok: false, reason: 'unknown_business' };
+  const owned = db.prepare('SELECT COUNT(*) c FROM businesses WHERE guild_id = ? AND owner_id = ?').get(gid, uid).c;
+  if (owned >= 12) return { ok: false, reason: 'business_limit' };
+  const paid = debit(gid, uid, t.cost, 'business_purchase', { meta: { type } });
+  if (!paid.ok) return { ok: false, reason: 'insufficient_cash' };
+  const info = db.prepare(
+    'INSERT INTO businesses (guild_id, owner_id, type, name, level, staff, last_collect, created_at) VALUES (?,?,?,?,1,0,?,?)',
+  ).run(gid, uid, type, name || `${t.emoji} ${t.name}`, now(), now());
+  return { ok: true, id: info.lastInsertRowid, business: businessById(gid, info.lastInsertRowid), cost: t.cost };
+});
+
+/** Upgrade one level. Cost scales with the current level. */
+export const upgradeBusiness = db.transaction((guildId, userId, businessId) => {
+  const gid = String(guildId);
+  const uid = String(userId);
+  const b = db.prepare('SELECT * FROM businesses WHERE guild_id = ? AND id = ?').get(gid, Number(businessId));
+  if (!b) return { ok: false, reason: 'not_found' };
+  if (String(b.owner_id) !== uid) return { ok: false, reason: 'not_owner' };
+  const t = BUSINESS_TYPES[b.type];
+  if (!t) return { ok: false, reason: 'unknown_business' };
+  if (b.level >= t.max_level) return { ok: false, reason: 'max_level' };
+  const cost = upgradeCost(b.type, b.level + 1);
+  const paid = debit(gid, uid, cost, 'business_upgrade', { meta: { business: b.id } });
+  if (!paid.ok) return { ok: false, reason: 'insufficient_cash', cost };
+  db.prepare('UPDATE businesses SET level = level + 1 WHERE guild_id = ? AND id = ?').run(gid, b.id);
+  return { ok: true, cost, business: businessById(gid, b.id) };
+});
+
+/** Hire staff: raises output and shortens the collection cycle. */
+export const hireStaff = db.transaction((guildId, userId, businessId, count = 1) => {
+  const gid = String(guildId);
+  const uid = String(userId);
+  const b = db.prepare('SELECT * FROM businesses WHERE guild_id = ? AND id = ?').get(gid, Number(businessId));
+  if (!b) return { ok: false, reason: 'not_found' };
+  if (String(b.owner_id) !== uid) return { ok: false, reason: 'not_owner' };
+  const n = Math.max(1, Math.min(10, Math.trunc(Number(count) || 1)));
+  if (b.staff >= 25) return { ok: false, reason: 'staff_full' };
+  const t = BUSINESS_TYPES[b.type];
+  const cost = Math.round((t.base_income || 100) * 2.5) * n;
+  const paid = debit(gid, uid, cost, 'business_hire', { meta: { business: b.id, count: n } });
+  if (!paid.ok) return { ok: false, reason: 'insufficient_cash', cost };
+  db.prepare('UPDATE businesses SET staff = staff + ? WHERE guild_id = ? AND id = ?').run(n, gid, b.id);
+  return { ok: true, cost, hired: n, business: businessById(gid, b.id) };
+});
+
+/** Collect accrued income exactly once (pending resets via last_collect). */
+export const collectBusinessIncome = db.transaction((guildId, userId, businessId = null) => {
+  const gid = String(guildId);
+  const uid = String(userId);
+  const rows = businessId
+    ? db.prepare('SELECT * FROM businesses WHERE guild_id = ? AND id = ? AND owner_id = ?').all(gid, Number(businessId), uid)
+    : db.prepare('SELECT * FROM businesses WHERE guild_id = ? AND owner_id = ?').all(gid, uid);
+  if (!rows.length) return { ok: false, reason: 'not_found' };
+  let total = 0;
+  const collected = [];
+  for (const row of rows) {
+    const meta = businessMeta(row);
+    if (meta.pending <= 0) continue;
+    db.prepare('UPDATE businesses SET last_collect = ? WHERE guild_id = ? AND id = ?').run(now(), gid, row.id);
+    total += meta.pending;
+    collected.push({ id: row.id, name: row.name, amount: meta.pending });
+  }
+  if (total <= 0) return { ok: false, reason: 'nothing_to_collect' };
+  credit(gid, uid, total, 'business_income', { meta: { businesses: collected.length } });
+  return { ok: true, total, collected, cash: getUser(gid, uid).cash };
+});
+
+/** Buy a property or vehicle from the asset catalogue. */
+export const buyAsset = db.transaction((guildId, userId, key) => {
+  const gid = String(guildId);
+  const uid = String(userId);
+  const a = PROPERTIES[key];
+  if (!a) return { ok: false, reason: 'unknown_asset' };
+  const owned = db.prepare('SELECT * FROM assets WHERE guild_id = ? AND user_id = ? AND kind = ? AND key = ?').get(gid, uid, a.kind, key);
+  if (owned) return { ok: false, reason: 'already_owned' };
+  const paid = debit(gid, uid, a.cost, `asset_${a.kind}`, { meta: { key } });
+  if (!paid.ok) return { ok: false, reason: 'insufficient_cash', cost: a.cost };
+  db.prepare('INSERT INTO assets (guild_id, user_id, kind, key, level, acquired_at) VALUES (?,?,?,?,1,?)')
+    .run(gid, uid, a.kind, key, now());
+  return { ok: true, asset: { ...a, key } };
+});
+
+export const assetList = (kind = null) => Object.entries(PROPERTIES)
+  .filter(([, a]) => !kind || a.kind === kind)
+  .map(([key, a]) => ({ key, ...a }));
