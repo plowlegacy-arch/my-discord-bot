@@ -203,7 +203,7 @@ export function stats() {
     )
     .all(now() - 86400000);
   const byChain = db
-    .prepare(`SELECT chain, COUNT(*) c, MAX(last_scan_at) last FROM chains GROUP BY chain`)
+    .prepare(`SELECT id AS chain, name, status, last_block, head_block, last_error, last_scan_at AS last FROM chains ORDER BY id`)
     .all();
   return { totals, events, byChain };
 }
