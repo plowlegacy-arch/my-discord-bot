@@ -223,7 +223,7 @@ export default function Overview({ chains, onNavigate }) {
         <Card title="Economy supply" sub="Server-scoped virtual currency">
           <Stat label="Circulating" value={num(economyData.supply || 0)} small meta={`${num(economyData.members || 0)} members`} />
           <div style={{ height: 10 }} />
-          <div className="row" style={{ justifyContent: 'space-between' }} className="small dim">
+          <div className="row small dim" style={{ justifyContent: 'space-between' }}>
             <span>Wallet {num(economyData.cash || 0)}</span>
             <span>Bank {num(economyData.bank || 0)}</span>
           </div>
